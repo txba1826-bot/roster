@@ -43,7 +43,8 @@ if mode == "角色卡照片":
     if not names:
         st.error("找不到 assets/roster/ 圖檔。")
 else:
-    slot = st.selectbox("② 選擇封面格（由左至右）", ["封面 1", "封面 2", "封面 3", "封面 4"])
+    slot = st.selectbox("② 選擇封面圖（最多 12 張，一次輪播顯示 4 張）",
+                        [f"封面 {i}" for i in range(1, 13)])
     n = slot.split()[-1]
     label = slot
     repo_path = f"assets/hero/{n}.jpg"
