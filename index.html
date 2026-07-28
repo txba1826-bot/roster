@@ -19,7 +19,7 @@ a{color:inherit;text-decoration:none}
 .nav a:hover{color:var(--fg)}
 .cta-s{border:1px solid rgba(194,72,90,.55);color:var(--fg);padding:9px 20px;font-size:.84rem;letter-spacing:.08em;transition:.3s;white-space:nowrap}
 .cta-s:hover{background:var(--accent)}
-.hero{min-height:40vh;display:flex;flex-direction:column;justify-content:center;padding:clamp(84px,11vh,116px) 0 clamp(24px,3.5vh,40px)}
+.hero{min-height:auto;display:flex;flex-direction:column;justify-content:center;padding:clamp(26px,4vh,44px) 0 clamp(24px,3.5vh,40px)}
 .hero h1{font-family:'Noto Serif TC',serif;font-weight:300;font-size:clamp(2rem,5.4vw,3rem);letter-spacing:.1em;line-height:1.25;color:var(--fg);margin-top:16px}
 .hero .it{font-family:'Cormorant Garamond','Noto Serif TC',serif;font-style:italic;font-weight:300;font-size:clamp(1rem,2vw,1.35rem);letter-spacing:.02em;color:var(--mut);margin-top:12px}
 .bar{width:32px;height:2px;background:var(--accent);margin-top:22px}
@@ -98,6 +98,17 @@ a{color:inherit;text-decoration:none}
 .foot .r{margin-left:auto;font-family:'DM Sans',sans-serif;font-size:.8rem;letter-spacing:.22em;color:#5a5a5a}
 @media(max-width:960px){ .grid{grid-template-columns:repeat(3,1fr)} .stats{grid-template-columns:repeat(2,1fr)} .modes{grid-template-columns:1fr} .bignums{grid-template-columns:repeat(2,1fr)} }
 @media(max-width:640px){ .nav{display:none} .grid{grid-template-columns:repeat(2,1fr);gap:11px} .meta{padding:10px 11px 12px} .nm{font-size:.95rem} .human{grid-template-columns:1fr} .hph{max-height:280px} }
+
+.cover{position:relative;margin-top:86px;border:1px solid var(--line);overflow:hidden}
+.cg{display:grid;grid-template-columns:repeat(4,1fr);height:clamp(300px,42vh,430px)}
+.cg figure{position:relative;overflow:hidden;margin:0}
+.cg img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;filter:saturate(.92) brightness(.72);display:block}
+.cg figure:not(:last-child){border-right:1px solid rgba(0,0,0,.5)}
+.cover .cov{position:absolute;inset:0;background:rgba(8,8,8,.4)}
+.ctxt{position:absolute;left:0;bottom:32px;padding:0 clamp(24px,4vw,48px)}
+.ctxt h1{font-family:'Noto Serif TC',serif;font-weight:300;font-size:clamp(1.9rem,5vw,2.9rem);letter-spacing:.1em;color:var(--fg);margin-top:12px;text-shadow:0 2px 24px rgba(0,0,0,.5)}
+.ctxt .bar{width:32px;height:2px;background:var(--accent);margin-top:18px}
+@media(max-width:760px){.cover{margin-top:70px}.cg{grid-template-columns:repeat(2,1fr);height:auto}.cg img{height:220px}}
 </style></head><body>
 
 <div class="top"><div class="wrap">
@@ -107,9 +118,21 @@ a{color:inherit;text-decoration:none}
 </div></div>
 
 <div class="wrap">
+  <section class="cover">
+    <div class="cg">
+      <figure><img class="hero-tile" src="assets/hero/1.jpg" loading="eager" alt=""></figure>
+      <figure><img class="hero-tile" src="assets/hero/2.jpg" loading="eager" alt=""></figure>
+      <figure><img class="hero-tile" src="assets/hero/3.jpg" loading="eager" alt=""></figure>
+      <figure><img class="hero-tile" src="assets/hero/4.jpg" loading="eager" alt=""></figure>
+    </div>
+    <div class="cov"></div>
+    <div class="ctxt">
+      <div class="slabel">Agency&nbsp;&nbsp;—&nbsp;&nbsp;虛擬經紀</div>
+      <h1>數字藝人陣容</h1>
+      <div class="bar"></div>
+    </div>
+  </section>
   <section class="hero">
-    <div class="slabel">Agency&nbsp;&nbsp;—&nbsp;&nbsp;虛擬經紀</div>
-    <h1>數字藝人陣容</h1>
     <div class="it">角色不是真人，但故事是真的。</div>
     <div class="bar"></div>
     <p class="d">創造並經營全 AI 生成的虛擬角色，從原創世界觀出發——演出、經營自媒體、承接商務合作。</p>
@@ -552,7 +575,7 @@ a{color:inherit;text-decoration:none}
    線上覆蓋圖檔後訪客最慢一分鐘內即見新圖，同時保留輕度快取。 */
 (function(){
   var t = Math.floor(Date.now()/60000);
-  document.querySelectorAll('img.ph, img.hph').forEach(function(im){
+  document.querySelectorAll('img.ph, img.hph, img.hero-tile').forEach(function(im){
     var s = im.getAttribute('src'); if(!s) return;
     im.setAttribute('src', s + (s.indexOf('?')>-1?'&':'?') + 'v=' + t);
   });

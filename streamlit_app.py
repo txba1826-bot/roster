@@ -1,29 +1,23 @@
 # -*- coding: utf-8 -*-
 """留白製造所 · 商務形象頁 — 照片管理小後台（獨立 Streamlit app）
-選角色 → 上傳 → 拖框 3:4 → 存檔，commit 回本倉庫 assets/roster/<名>.jpg，
-GitHub Pages 形象頁約一分鐘內同步。部署自 txba1826-bot/roster。"""
+角色卡照片 → assets/roster/<名>.jpg；首頁封面 → assets/hero/1~4.jpg。
+選 → 上傳 → 拖框 3:4 → 存檔，commit 回本倉庫，GitHub Pages 約一分鐘內同步。
+部署自 txba1826-bot/roster。"""
 import streamlit as st
 import os, io
 from PIL import Image
 
 st.set_page_config(page_title="形象頁 · 照片管理", page_icon="📸", layout="centered")
-
-st.markdown("""
-<style>
-[data-testid="stAppViewContainer"]{background:#0e0e0e}
-h1,h2,h3,p,label,span,div{color:#eaeaea}
-</style>
-""", unsafe_allow_html=True)
+st.markdown("""<style>[data-testid="stAppViewContainer"]{background:#0e0e0e}
+h1,h2,h3,p,label,span,div{color:#eaeaea}</style>""", unsafe_allow_html=True)
 
 st.title("📸 商務形象頁 · 照片管理")
-st.caption("選角色 → 上傳 → 拖框調 3:4 → 存檔發布。圖檔會 commit 回本倉庫，"
-           "形象頁 https://txba1826-bot.github.io/roster/ 約一分鐘內同步。")
+st.caption("選要換的位置 → 上傳 → 拖框調 3:4 → 存檔發布。約一分鐘後 "
+           "https://txba1826-bot.github.io/roster/ 同步。")
 
-ROSTER_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "roster")
-try:
-    existing = sorted(f[:-4] for f in os.listdir(ROSTER_DIR) if f.lower().endswith(".jpg"))
-except Exception:
-    existing = []
+BASE = os.path.dirname(os.path.abspath(__file__))
+ROSTER_DIR = os.path.join(BASE, "assets", "roster")
+HERO_DIR = os.path.join(BASE, "assets", "hero")
 
 def to34(im):
     cw, ch = im.size
@@ -36,18 +30,33 @@ def to34(im):
         im = im.crop((off, 0, off + nw, ch))
     return im
 
-if not existing:
-    st.error("找不到 assets/roster/ 圖檔。請確認本倉庫含 assets/roster/*.jpg。")
-else:
-    name = st.selectbox("① 選擇角色", existing)
-    cur = os.path.join(ROSTER_DIR, name + ".jpg")
-    if os.path.exists(cur):
-        st.image(cur, width=200, caption=f"目前照片：{name}")
+mode = st.radio("① 要換哪裡？", ["角色卡照片", "首頁封面（4 格）"], horizontal=True)
 
-    up = st.file_uploader("② 上傳新照片（jpg / png）", type=["jpg", "jpeg", "png"])
+if mode == "角色卡照片":
+    try:
+        names = sorted(f[:-4] for f in os.listdir(ROSTER_DIR) if f.lower().endswith(".jpg"))
+    except Exception:
+        names = []
+    label = st.selectbox("② 選擇角色", names) if names else None
+    repo_path = f"assets/roster/{label}.jpg" if label else None
+    local_path = os.path.join(ROSTER_DIR, f"{label}.jpg") if label else None
+    if not names:
+        st.error("找不到 assets/roster/ 圖檔。")
+else:
+    slot = st.selectbox("② 選擇封面格（由左至右）", ["封面 1", "封面 2", "封面 3", "封面 4"])
+    n = slot.split()[-1]
+    label = slot
+    repo_path = f"assets/hero/{n}.jpg"
+    local_path = os.path.join(HERO_DIR, f"{n}.jpg")
+
+if label:
+    if local_path and os.path.exists(local_path):
+        st.image(local_path, width=200, caption=f"目前：{label}")
+
+    up = st.file_uploader("③ 上傳新照片（jpg / png）", type=["jpg", "jpeg", "png"])
     if up is not None:
         img = Image.open(up).convert("RGB")
-        st.markdown("**③ 拖框調整（固定 3:4 比例）**")
+        st.markdown("**④ 拖框調整（固定 3:4 比例）**")
         try:
             from streamlit_cropper import st_cropper
             crop = st_cropper(img, aspect_ratio=(3, 4), box_color="#C2485A", realtime_update=True)
@@ -69,25 +78,22 @@ else:
                 token = st.secrets["github"]["token"]
                 repo_name = st.secrets["github"].get("repo", "txba1826-bot/roster")
             except Exception:
-                st.error("尚未設定 GitHub 權杖。請在 Streamlit secrets 加入 "
-                         "[github] token=\"ghp_...\" repo=\"txba1826-bot/roster\"。")
+                st.error("尚未設定 GitHub 權杖（secrets [github] token）。")
                 st.stop()
             try:
                 from github import Github
                 repo = Github(token).get_repo(repo_name)
-                path = f"assets/roster/{name}.jpg"
                 try:
-                    ex = repo.get_contents(path)
-                    repo.update_file(path, f"update roster photo: {name}", data, ex.sha)
+                    ex = repo.get_contents(repo_path)
+                    repo.update_file(repo_path, f"update {label}", data, ex.sha)
                 except Exception:
-                    repo.create_file(path, f"add roster photo: {name}", data)
+                    repo.create_file(repo_path, f"add {label}", data)
                 try:
-                    with open(cur, "wb") as f:
+                    with open(local_path, "wb") as f:
                         f.write(data)
                 except Exception:
                     pass
-                st.success(f"✅ 已發布「{name}」的新照片！約一分鐘後刷新 "
-                           "https://txba1826-bot.github.io/roster/ 即見新圖。")
+                st.success(f"✅ 已發布「{label}」！約一分鐘後刷新形象頁即見新圖。")
                 st.balloons()
             except Exception as e:
                 st.error(f"發布失敗：{e}")
