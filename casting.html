@@ -101,7 +101,7 @@ function render(){
   const g=document.getElementById('grid'); g.innerHTML='';
   list.forEach(c=>{
     const d=document.createElement('div'); d.className='card'; d.onclick=()=>open_(c.n);
-    d.innerHTML=`<img src="${c.img}" loading="lazy" alt=""><div class="meta"><span class="nm">${esc(c.n)}</span><span class="en">${esc(c.e)}</span><div class="sub">${esc(c.vibe)}</div></div>`;
+    d.innerHTML=`<img src="${c.img}" loading="lazy" alt=""><div class="meta"><span class="nm">${esc(c.n)}</span><span class="en">${esc(c.e)}</span><div class="sub">${esc(c.vibe||c.tags||c.job)}</div></div>`;
     g.appendChild(d);
   });
 }
@@ -113,7 +113,7 @@ function open_(n){
     <div class="mbody">
       <div class="mhd"><span class="nm" style="font-family:'Noto Serif TC',serif;color:#fff">${esc(c.n)}</span><span class="en">${esc(c.e)}</span><span class="x" onclick="document.getElementById('ov').classList.remove('show')">×</span></div>
       <div class="chips">${esc(chips)}</div>
-      <div class="sec"><div class="st">Persona — 人物設定</div><p>${esc(c.vibe)}${c.job?'／'+esc(c.job):''}<br>${esc(c.tags)}</p></div>
+      <div class="sec"><div class="st">Persona — 人物設定</div><p>${[[c.vibe,c.job].filter(Boolean).map(esc).join('／'), esc(c.tags)].filter(Boolean).join('<br>')}</p></div>
       <div class="sec"><div class="st">Story — 背景故事 · 世界觀</div><p>${esc(c.story)}</p></div>
     </div>`;
   document.getElementById('ov').classList.add('show');
