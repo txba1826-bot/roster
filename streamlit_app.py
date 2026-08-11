@@ -37,10 +37,34 @@ if mode == "角色卡照片":
         names = sorted(f[:-4] for f in os.listdir(ROSTER_DIR) if f.lower().endswith(".jpg"))
     except Exception:
         names = []
-    label = st.selectbox("② 選擇角色", names) if names else None
+    # 依 女 → 男 → 其他 分組排序（讀 assets/roster_meta.json）
+    meta = {}
+    try:
+        import json as _json
+        with open(os.path.join(BASE, "assets", "roster_meta.json"), encoding="utf-8") as _f:
+            meta = _json.load(_f)
+    except Exception:
+        pass
+    _ORDER = {"女": 0, "男": 1, "其他": 2}
+    def _key(n):
+        g = (meta.get(n) or {}).get("g", "女")
+        return (_ORDER.get(g, 3), n)
+    names = sorted(names, key=_key)
+    def _fmt(n):
+        info = meta.get(n) or {}
+        g = info.get("g", "")
+        en = info.get("e", "")
+        tag = {"女": "👩", "男": "👨", "其他": "🐾"}.get(g, "")
+        return f"{tag} {n}" + (f"　{en}" if en and en != "（待定）" else "")
+    label = st.selectbox("② 選擇角色", names, format_func=_fmt) if names else None
     repo_path = f"assets/roster/{label}.jpg" if label else None
     local_path = os.path.join(ROSTER_DIR, f"{label}.jpg") if label else None
-    if not names:
+    if names:
+        _nf = sum(1 for n in names if (meta.get(n) or {}).get("g") == "女")
+        _nm = sum(1 for n in names if (meta.get(n) or {}).get("g") == "男")
+        _no = len(names) - _nf - _nm
+        st.caption(f"共 {len(names)} 張：女 {_nf} · 男 {_nm} · 其他/真人 {_no}")
+    else:
         st.error("找不到 assets/roster/ 圖檔。")
 else:
     slot = st.selectbox("② 選擇封面圖（最多 12 張，一次輪播顯示 4 張）",
