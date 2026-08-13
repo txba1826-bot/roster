@@ -30,7 +30,7 @@ def to34(im):
         im = im.crop((off, 0, off + nw, ch))
     return im
 
-mode = st.radio("① 要換哪裡？", ["角色卡照片", "首頁封面（4 格）"], horizontal=True)
+mode = st.radio("① 要換哪裡？", ["角色卡照片", "首頁封面（4 格）", "角色庫卡面（大總表）"], horizontal=True)
 
 if mode == "角色卡照片":
     try:
@@ -66,13 +66,39 @@ if mode == "角色卡照片":
         st.caption(f"共 {len(names)} 張：女 {_nf} · 男 {_nm} · 其他/真人 {_no}")
     else:
         st.error("找不到 assets/roster/ 圖檔。")
-else:
+elif mode == "首頁封面（4 格）":
     slot = st.selectbox("② 選擇封面圖（最多 12 張，一次輪播顯示 4 張）",
                         [f"封面 {i}" for i in range(1, 13)])
     n = slot.split()[-1]
     label = slot
     repo_path = f"assets/hero/{n}.jpg"
     local_path = os.path.join(HERO_DIR, f"{n}.jpg")
+else:
+    # 角色庫卡面：大總表卡片墙的首圖（assets/dashthumbs/<名>.jpg），
+    # 不影響形象頁與概念圖。發布後大總表約一分鐘自動更新。
+    DASH_DIR = os.path.join(BASE, "assets", "dashthumbs")
+    try:
+        names = sorted(f[:-4] for f in os.listdir(ROSTER_DIR) if f.lower().endswith(".jpg"))
+    except Exception:
+        names = []
+    meta = {}
+    try:
+        import json as _json
+        with open(os.path.join(BASE, "assets", "roster_meta.json"), encoding="utf-8") as _f:
+            meta = _json.load(_f)
+    except Exception:
+        pass
+    _ORDER = {"女": 0, "男": 1, "其他": 2}
+    names = sorted(names, key=lambda n: (_ORDER.get((meta.get(n) or {}).get("g", "女"), 3), n))
+    def _fmt2(n):
+        info = meta.get(n) or {}
+        tag = {"女": "👩", "男": "👨", "其他": "🐾"}.get(info.get("g", ""), "")
+        en = info.get("e", "")
+        return f"{tag} {n}" + (f"　{en}" if en and en != "（待定）" else "")
+    label = st.selectbox("② 選擇角色", names, format_func=_fmt2) if names else None
+    st.caption("此模式只換『大總表』卡片首圖，不會動到形象頁照片與概念圖。")
+    repo_path = f"assets/dashthumbs/{label}.jpg" if label else None
+    local_path = os.path.join(DASH_DIR, f"{label}.jpg") if label else None
 
 if label:
     if local_path and os.path.exists(local_path):
